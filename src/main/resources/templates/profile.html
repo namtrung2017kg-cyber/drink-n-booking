@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Thông tin cá nhân')}"></head>
+<body>
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div class="container py-5" style="max-width:420px">
+    <h3 class="mb-3">Thông tin cá nhân</h3>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+    <form th:action="@{/profile}" method="post">
+        <input class="form-control mb-3" th:value="${user.email}" disabled>
+        <input class="form-control mb-3" name="fullName" th:value="${user.fullName}" placeholder="Họ tên">
+        <input class="form-control mb-3" name="phone" th:value="${user.phone}" placeholder="Số điện thoại">
+        <button class="btn btn-primary w-100">Lưu</button>
+    </form>
+</div>
+</body>
+</html>
