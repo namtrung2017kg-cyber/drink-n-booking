@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Đồ uống')}"></head>
+<body>
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="m-0">Đồ uống</h3>
+        <a class="btn btn-success" th:href="@{/admin/drinks/new}">+ Thêm đồ uống</a>
+    </div>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+
+    <form class="row g-2 mb-3" th:action="@{/admin/drinks}" method="get">
+        <div class="col-12 col-md-5">
+            <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tìm theo tên...">
+        </div>
+        <div class="col-8 col-md-4">
+            <select class="form-select" name="categoryId">
+                <option value="">Tất cả loại</option>
+                <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.name}"
+                        th:selected="${c.id == categoryId}"></option>
+            </select>
+        </div>
+        <div class="col-4 col-md-3">
+            <button class="btn btn-primary w-100">Tìm</button>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+            <tr><th>#</th><th>Tên</th><th>Loại</th><th>Giá</th><th>Trạng thái</th><th style="width:170px">Thao tác</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="d : ${drinks.content}">
+                <td th:text="${d.id}"></td>
+                <td th:text="${d.name}"></td>
+                <td th:text="${d.category.name}"></td>
+                <td th:text="${#numbers.formatInteger(d.price, 0, 'POINT')} + ' đ'"></td>
+                <td>
+                    <span th:if="${d.available}" class="badge bg-success">Đang bán</span>
+                    <span th:unless="${d.available}" class="badge bg-secondary">Ngừng bán</span>
+                </td>
+                <td>
+                    <a class="btn btn-sm btn-primary" th:href="@{/admin/drinks/{id}/edit(id=${d.id})}">Sửa</a>
+                    <form class="d-inline" th:action="@{/admin/drinks/{id}/delete(id=${d.id})}"
+                          method="post" onsubmit="return confirm('Xóa đồ uống này?')">
+                        <button class="btn btn-sm btn-danger">Xóa</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${drinks.empty}">
+                <td colspan="6" class="text-center">Không có đồ uống nào</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <nav th:if="${drinks.totalPages > 1}">
+        <ul class="pagination flex-wrap">
+            <li class="page-item" th:classappend="${drinks.first} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/drinks(keyword=${keyword},categoryId=${categoryId},page=${drinks.number - 1})}">«</a>
+            </li>
+            <li class="page-item" th:each="i : ${#numbers.sequence(0, drinks.totalPages - 1)}"
+                th:classappend="${i == drinks.number} ? 'active'">
+                <a class="page-link" th:href="@{/admin/drinks(keyword=${keyword},categoryId=${categoryId},page=${i})}" th:text="${i + 1}"></a>
+            </li>
+            <li class="page-item" th:classappend="${drinks.last} ? 'disabled'">
+                <a class="page-link" th:href="@{/admin/drinks(keyword=${keyword},categoryId=${categoryId},page=${drinks.number + 1})}">»</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+</body>
+</html>
