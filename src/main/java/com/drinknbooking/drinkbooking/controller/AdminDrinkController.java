@@ -31,7 +31,7 @@ public class AdminDrinkController {
                        @RequestParam(name = "page", defaultValue = "0") int page,
                        Model model) {
         Page<Drink> result = drinkRepository.search(keyword.trim(), categoryId,
-                PageRequest.of(Math.max(page, 0), 5, Sort.by("id").descending()));
+                PageRequest.of(Math.max(page, 0), 5, Sort.by("id").ascending()));
         model.addAttribute("drinks", result);
         model.addAttribute("categories", categoryRepository.findAll());
         model.addAttribute("keyword", keyword);

@@ -6,6 +6,7 @@
 <div class="container py-5" style="max-width:420px">
     <h3 class="mb-3">Đăng nhập</h3>
     <div th:if="${param.error}" class="alert alert-danger">Sai email hoặc mật khẩu</div>
+    <div th:if="${param.locked}" class="alert alert-danger">Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.</div>
     <div th:if="${param.registered}" class="alert alert-success">Đăng ký thành công, hãy đăng nhập</div>
     <form th:action="@{/login}" method="post">
         <input class="form-control mb-3" type="email" name="username" placeholder="Email" required>
