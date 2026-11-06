@@ -5,8 +5,9 @@
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div class="container py-4" style="max-width:560px">
     <h3 class="mb-3" th:text="${drink.id == null} ? 'Thêm đồ uống' : 'Sửa đồ uống'"></h3>
-    <form th:action="@{/admin/drinks/save}" th:object="${drink}" method="post">
+    <form th:action="@{/admin/drinks/save}" th:object="${drink}" method="post" enctype="multipart/form-data">
         <input type="hidden" th:field="*{id}">
+        <input type="hidden" th:field="*{imageUrl}">
         <div class="mb-3">
             <label class="form-label">Tên đồ uống</label>
             <input class="form-control" th:field="*{name}">
@@ -26,8 +27,17 @@
             <div class="text-danger small" th:errors="*{price}"></div>
         </div>
         <div class="mb-3">
-            <label class="form-label">Link ảnh (không bắt buộc)</label>
-            <input class="form-control" th:field="*{imageUrl}">
+            <label class="form-label">Ảnh đồ uống</label>
+            <div class="mb-2" th:if="${drink.imageUrl != null and !#strings.isEmpty(drink.imageUrl)}">
+                <img th:src="${drink.imageUrl}" alt="" class="img-thumbnail" style="max-height:160px">
+                <div class="form-check mt-1">
+                    <input class="form-check-input" type="checkbox" name="removeImage" value="true" id="removeImage">
+                    <label class="form-check-label" for="removeImage">Xóa ảnh hiện tại</label>
+                </div>
+            </div>
+            <input class="form-control" type="file" name="imageFile" accept="image/*">
+            <div class="form-text">Chọn ảnh từ máy (JPG, PNG, GIF). Không chọn thì giữ nguyên ảnh cũ.</div>
+            <div class="text-danger small" th:errors="*{imageUrl}"></div>
         </div>
         <div class="mb-3">
             <label class="form-label">Mô tả</label>

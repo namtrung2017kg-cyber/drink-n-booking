@@ -12,6 +12,7 @@
     <div class="container d-flex flex-wrap gap-2">
         <a class="navbar-brand" th:href="@{/}">☕ DrinkBooking</a>
         <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a class="btn btn-sm btn-outline-light" th:href="@{/menu}">Thực đơn</a>
             <a sec:authorize="hasRole('ADMIN')" class="btn btn-sm btn-warning" th:href="@{/admin/dashboard}">Admin</a>
             <a sec:authorize="hasAnyRole('STAFF','ADMIN')" class="btn btn-sm btn-info" th:href="@{/staff/schedule}">Lịch làm việc</a>
             <a sec:authorize="isAuthenticated()" class="btn btn-sm btn-outline-light" th:href="@{/profile}">Cá nhân</a>

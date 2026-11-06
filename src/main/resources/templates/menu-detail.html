@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Chi tiết đồ uống')}"></head>
+<body>
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div class="container py-4">
+    <a class="btn btn-outline-secondary btn-sm mb-3" th:href="@{/menu}">← Quay lại thực đơn</a>
+    <div class="row g-4">
+        <div class="col-12 col-md-5">
+            <img th:if="${drink.imageUrl != null and !#strings.isEmpty(drink.imageUrl)}" th:src="${drink.imageUrl}"
+                 class="img-fluid rounded" alt="">
+            <div th:unless="${drink.imageUrl != null and !#strings.isEmpty(drink.imageUrl)}"
+                 class="bg-light rounded d-flex align-items-center justify-content-center" style="height:260px;font-size:80px">☕</div>
+        </div>
+        <div class="col-12 col-md-7">
+            <span class="badge bg-info text-dark mb-2" th:text="${drink.category.name}"></span>
+            <h2 th:text="${drink.name}"></h2>
+            <h4 class="text-success" th:text="${#numbers.formatInteger(drink.price, 0, 'POINT')} + ' đ'"></h4>
+            <p class="mt-3" th:text="${drink.description}"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>
