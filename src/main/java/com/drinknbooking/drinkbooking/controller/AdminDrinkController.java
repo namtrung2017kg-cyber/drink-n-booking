@@ -7,6 +7,7 @@ import com.drinknbooking.drinkbooking.repository.CategoryRepository;
 import com.drinknbooking.drinkbooking.repository.DrinkImageRepository;
 import com.drinknbooking.drinkbooking.repository.DrinkRepository;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -113,9 +114,13 @@ public class AdminDrinkController {
 
     @PostMapping("/{id}/delete")
     public String delete(@PathVariable("id") Long id, RedirectAttributes ra) {
-        drinkImageRepository.deleteById(id);
-        drinkRepository.deleteById(id);
-        ra.addFlashAttribute("msg", "Đã xóa đồ uống");
+        try {
+            drinkRepository.deleteById(id);
+            drinkImageRepository.deleteById(id);
+            ra.addFlashAttribute("msg", "Đã xóa đồ uống");
+        } catch (DataIntegrityViolationException e) {
+            ra.addFlashAttribute("error", "Đồ uống đã có lịch đặt, hãy bỏ tích Đang bán thay vì xóa");
+        }
         return "redirect:/admin/drinks";
     }
 

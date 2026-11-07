@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Đặt lịch')}"></head>
+<body>
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div class="container py-4" style="max-width:600px">
+    <a class="btn btn-outline-secondary btn-sm mb-3" th:href="@{/menu/{id}(id=${drink.id})}">← Quay lại</a>
+    <h3 class="mb-3">Đặt lịch</h3>
+
+    <div class="card mb-3">
+        <div class="card-body d-flex gap-3 align-items-center">
+            <img th:if="${drink.imageUrl != null and !#strings.isEmpty(drink.imageUrl)}" th:src="${drink.imageUrl}"
+                 class="rounded" alt="" style="width:80px;height:80px;object-fit:cover">
+            <div>
+                <h5 class="m-0" th:text="${drink.name}"></h5>
+                <div class="text-success" th:text="${#numbers.formatInteger(drink.price, 0, 'POINT')} + ' đ / ly'"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info small">
+        Giờ nhận từ 07:00 đến 20:30, mỗi khung 30 phút. Đặt trước ít nhất 30 phút và tối đa 14 ngày.
+        Hủy lịch được khi còn ít nhất 60 phút.
+    </div>
+
+    <form th:action="@{/booking/create}" th:object="${form}" method="post">
+        <input type="hidden" th:field="*{drinkId}">
+
+        <div class="mb-3">
+            <label class="form-label">Số lượng</label>
+            <input class="form-control" type="number" min="1" max="10" th:field="*{quantity}">
+            <div class="text-danger small" th:errors="*{quantity}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Ngày nhận</label>
+            <input class="form-control" type="date" th:field="*{date}" th:attr="min=${today},max=${maxDate}">
+            <div class="text-danger small" th:errors="*{date}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Giờ nhận</label>
+            <select class="form-select" th:field="*{time}">
+                <option value="">-- Chọn giờ --</option>
+                <option th:each="s : ${slots}" th:value="${s}" th:text="${s}"></option>
+            </select>
+            <div class="text-danger small" th:errors="*{time}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Nhân viên (không bắt buộc)</label>
+            <select class="form-select" th:field="*{staffId}">
+                <option value="">Để cửa hàng sắp xếp</option>
+                <option th:each="s : ${staffList}" th:value="${s.id}" th:text="${s.fullName}"></option>
+            </select>
+            <div class="text-danger small" th:errors="*{staffId}"></div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Ghi chú</label>
+            <textarea class="form-control" rows="2" th:field="*{note}" placeholder="Ví dụ: ít đường, nhiều đá"></textarea>
+            <div class="text-danger small" th:errors="*{note}"></div>
+        </div>
+        <button class="btn btn-primary w-100">Gửi yêu cầu đặt lịch</button>
+    </form>
+</div>
+</body>
+</html>

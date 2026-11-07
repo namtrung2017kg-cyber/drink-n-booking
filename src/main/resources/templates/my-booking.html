@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Lịch của tôi')}"></head>
+<body>
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="m-0">Lịch đặt của tôi</h3>
+        <a class="btn btn-success" th:href="@{/menu}">+ Đặt thêm</a>
+    </div>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+            <tr><th>Giờ nhận</th><th>Đồ uống</th><th>SL</th><th>Tổng tiền</th><th>Nhân viên</th><th>Trạng thái</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${bookings}">
+                <td th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <span th:text="${b.drink.name}"></span>
+                    <div class="small text-muted" th:if="${b.note != null and !#strings.isEmpty(b.note)}"
+                         th:text="'Ghi chú: ' + ${b.note}"></div>
+                </td>
+                <td th:text="${b.quantity}"></td>
+                <td th:text="${#numbers.formatInteger(b.totalPrice, 0, 'POINT')} + ' đ'"></td>
+                <td th:text="${b.staff != null} ? ${b.staff.fullName} : 'Chưa phân công'"></td>
+                <td>
+                        <span class="badge"
+                              th:classappend="${b.status.name() == 'CANCELLED' ? 'bg-secondary' : (b.status.name() == 'COMPLETED' ? 'bg-success' : 'bg-primary')}"
+                              th:text="${b.status.label}"></span>
+                </td>
+                <td>
+                    <form th:if="${b.cancellable}" th:action="@{/booking/{id}/cancel(id=${b.id})}" method="post"
+                          onsubmit="return confirm('Hủy lịch này?')">
+                        <button class="btn btn-sm btn-danger">Hủy lịch</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(bookings)}">
+                <td colspan="7" class="text-center">Bạn chưa có lịch đặt nào</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

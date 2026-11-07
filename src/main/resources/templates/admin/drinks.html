@@ -9,6 +9,7 @@
         <a class="btn btn-success" th:href="@{/admin/drinks/new}">+ Thêm đồ uống</a>
     </div>
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
     <form class="row g-2 mb-3" th:action="@{/admin/drinks}" method="get">
         <div class="col-12 col-md-5">
