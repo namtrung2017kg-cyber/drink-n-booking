@@ -46,10 +46,4 @@ public class PageController {
         ra.addFlashAttribute("msg", "Đã cập nhật thông tin");
         return "redirect:/profile";
     }
-
-    @GetMapping("/admin/dashboard")
-    public String adminDashboard() { return "admin/dashboard"; }
-
-    @GetMapping("/staff/schedule")
-    public String staffSchedule() { return "staff/schedule"; }
 }

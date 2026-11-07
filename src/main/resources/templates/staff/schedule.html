@@ -3,6 +3,67 @@
 <head th:replace="~{fragments :: head('Lịch làm việc')}"></head>
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
-<div class="container py-5"><h2>Lịch làm việc của nhân viên</h2></div>
+<div class="container py-4">
+    <h3 class="mb-3">Lịch làm việc của tôi</h3>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <h5 class="mt-4">Cần thực hiện</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+            <tr><th>Giờ nhận</th><th>Khách</th><th>Đồ uống</th><th>Ghi chú</th><th>Trạng thái</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${todo}">
+                <td th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <div th:text="${b.customer.fullName}"></div>
+                    <div class="small text-muted" th:text="${b.customer.phone}"></div>
+                </td>
+                <td th:text="${b.drink.name} + ' x ' + ${b.quantity}"></td>
+                <td th:text="${b.note}"></td>
+                <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.status.label}"></span></td>
+                <td>
+                    <form th:if="${b.status.name() == 'CONFIRMED'}"
+                          th:action="@{/staff/bookings/{id}/status(id=${b.id})}" method="post">
+                        <input type="hidden" name="to" value="IN_PROGRESS">
+                        <button class="btn btn-sm btn-warning">Bắt đầu</button>
+                    </form>
+                    <form th:if="${b.status.name() == 'IN_PROGRESS'}"
+                          th:action="@{/staff/bookings/{id}/status(id=${b.id})}" method="post">
+                        <input type="hidden" name="to" value="COMPLETED">
+                        <button class="btn btn-sm btn-success">Hoàn thành</button>
+                    </form>
+                    <span th:if="${b.status.name() == 'NEW'}" class="small text-muted">Chờ admin xác nhận</span>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(todo)}">
+                <td colspan="6" class="text-center">Không có lịch nào cần thực hiện</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h5 class="mt-4">Đã hoàn thành</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+            <tr><th>Giờ nhận</th><th>Khách</th><th>Đồ uống</th><th>Tổng tiền</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${done}">
+                <td th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${b.customer.fullName}"></td>
+                <td th:text="${b.drink.name} + ' x ' + ${b.quantity}"></td>
+                <td th:text="${#numbers.formatInteger(b.totalPrice, 0, 'POINT')} + ' đ'"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(done)}">
+                <td colspan="4" class="text-center">Chưa có lịch nào hoàn thành</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 </body>
 </html>
