@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 @Controller
@@ -34,14 +34,18 @@ public class StaffController {
         this.bookingService = bookingService;
     }
 
+    private LocalDateTime dueTime(Booking b) {
+        if (b.isLargeOrder() && b.getBookingTime() != null) return b.getBookingTime();
+        return b.getCreatedAt() != null ? b.getCreatedAt() : LocalDateTime.MIN;
+    }
+
     @GetMapping("/schedule")
     public String schedule(Principal principal, Model model) {
         User me = userRepository.findByEmail(principal.getName()).orElseThrow();
-        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
-        List<Booking> all = bookingRepository.findByStaffIdOrderByBookingTimeAsc(me.getId());
+        List<Booking> all = bookingRepository.findByStaffIdOrderByCreatedAtAsc(me.getId());
         List<Booking> todo = all.stream()
                 .filter(b -> b.getStatus() != BookingStatus.COMPLETED && b.getStatus() != BookingStatus.CANCELLED)
-                .filter(b -> !b.getBookingTime().isBefore(startOfToday) || b.getStatus() == BookingStatus.IN_PROGRESS)
+                .sorted(Comparator.comparing(this::dueTime))
                 .toList();
         List<Booking> done = all.stream()
                 .filter(b -> b.getStatus() == BookingStatus.COMPLETED)
@@ -56,7 +60,7 @@ public class StaffController {
                          Principal principal, RedirectAttributes ra) {
         Booking b = bookingRepository.findById(id).orElseThrow();
         if (b.getStaff() == null || !b.getStaff().getEmail().equals(principal.getName())) {
-            ra.addFlashAttribute("error", "Lịch này không được phân công cho bạn");
+            ra.addFlashAttribute("error", "Đơn này không được phân công cho bạn");
             return "redirect:/staff/schedule";
         }
         String err = bookingService.changeStatus(b, to, false);

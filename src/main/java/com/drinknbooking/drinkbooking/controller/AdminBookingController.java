@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-@RequestMapping("/admin/bookings")
+@RequestMapping("/admin/orders")
 public class AdminBookingController {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
@@ -42,18 +42,21 @@ public class AdminBookingController {
     @GetMapping
     public String list(@RequestParam(name = "keyword", defaultValue = "") String keyword,
                        @RequestParam(name = "status", required = false) BookingStatus status,
+                       @RequestParam(name = "type", defaultValue = "") String type,
                        @RequestParam(name = "date", required = false)
                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                        @RequestParam(name = "page", defaultValue = "0") int page,
                        Model model) {
+        Boolean large = "large".equals(type) ? Boolean.TRUE : ("normal".equals(type) ? Boolean.FALSE : null);
         LocalDateTime from = date != null ? date.atStartOfDay() : LocalDateTime.of(2000, 1, 1, 0, 0);
         LocalDateTime to = date != null ? date.plusDays(1).atStartOfDay() : LocalDateTime.of(2100, 1, 1, 0, 0);
-        Page<Booking> result = bookingRepository.searchAdmin(keyword.trim(), status, from, to,
-                PageRequest.of(Math.max(page, 0), 5, Sort.by("bookingTime", "id").ascending()));
+        Page<Booking> result = bookingRepository.searchAdmin(keyword.trim(), status, large, from, to,
+                PageRequest.of(Math.max(page, 0), 5, Sort.by("id").ascending()));
         model.addAttribute("bookings", result);
         model.addAttribute("statuses", BookingStatus.values());
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
+        model.addAttribute("type", type);
         model.addAttribute("date", date);
         return "admin/bookings";
     }
@@ -82,13 +85,13 @@ public class AdminBookingController {
                     .filter(u -> u.getRole() == Role.STAFF && u.isEnabled()).orElse(null);
             if (staff == null) {
                 ra.addFlashAttribute("error", "Nhân viên không hợp lệ");
-                return "redirect:/admin/bookings/" + id;
+                return "redirect:/admin/orders/" + id;
             }
         }
         String err = bookingService.assignStaff(b, staff);
         if (err != null) ra.addFlashAttribute("error", err);
-        else ra.addFlashAttribute("msg", "Đã cập nhật nhân viên phụ trách");
-        return "redirect:/admin/bookings/" + id;
+        else ra.addFlashAttribute("msg", "Đã cập nhật người phụ trách");
+        return "redirect:/admin/orders/" + id;
     }
 
     @PostMapping("/{id}/status")
@@ -98,6 +101,6 @@ public class AdminBookingController {
         String err = bookingService.changeStatus(b, to, true);
         if (err != null) ra.addFlashAttribute("error", err);
         else ra.addFlashAttribute("msg", "Đã chuyển trạng thái sang \"" + to.getLabel() + "\"");
-        return "redirect:/admin/bookings/" + id;
+        return "redirect:/admin/orders/" + id;
     }
 }
