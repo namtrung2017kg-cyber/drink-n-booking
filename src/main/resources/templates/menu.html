@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{fragments :: head('Thực đơn')}"></head>
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div class="container py-4">
     <h3 class="mb-3">Thực đơn</h3>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
     <form class="row g-2 mb-4" th:action="@{/menu}" method="get">
         <div class="col-12 col-md-5">
@@ -32,9 +35,18 @@
                     <h5 class="card-title" th:text="${d.name}"></h5>
                     <p class="card-text text-muted" th:text="${d.description}"></p>
                 </div>
-                <div class="card-footer d-flex justify-content-between align-items-center">
-                    <strong th:text="${#numbers.formatInteger(d.price, 0, 'POINT')} + ' đ'"></strong>
-                    <a class="btn btn-sm btn-primary" th:href="@{/menu/{id}(id=${d.id})}">Xem chi tiết</a>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <strong th:text="${#numbers.formatInteger(d.price, 0, 'POINT')} + ' đ'"></strong>
+                        <a class="btn btn-sm btn-outline-primary" th:href="@{/menu/{id}(id=${d.id})}">Chi tiết</a>
+                    </div>
+                    <form sec:authorize="isAuthenticated()" th:action="@{/cart/add}" method="post" class="d-flex gap-2">
+                        <input type="hidden" name="drinkId" th:value="${d.id}">
+                        <input type="hidden" name="from" value="menu">
+                        <input class="form-control form-control-sm" type="number" name="quantity" value="1"
+                               min="1" max="200" style="max-width:80px">
+                        <button class="btn btn-sm btn-success flex-grow-1">Thêm vào giỏ</button>
+                    </form>
                 </div>
             </div>
         </div>

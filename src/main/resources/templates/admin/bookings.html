@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Lịch đặt')}"></head>
+<head th:replace="~{fragments :: head('Quản lý đơn')}"></head>
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div class="container py-4">
-    <h3 class="mb-3">Quản lý lịch đặt</h3>
+    <h3 class="mb-3">Quản lý đơn</h3>
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
     <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-    <form class="row g-2 mb-3" th:action="@{/admin/bookings}" method="get">
-        <div class="col-12 col-md-4">
-            <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tên, email khách hoặc đồ uống...">
+    <form class="row g-2 mb-3" th:action="@{/admin/orders}" method="get">
+        <div class="col-12 col-md-3">
+            <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tên, email, SĐT khách...">
         </div>
         <div class="col-6 col-md-3">
             <select class="form-select" name="status">
@@ -19,10 +19,17 @@
                         th:selected="${s == status}"></option>
             </select>
         </div>
-        <div class="col-6 col-md-3">
-            <input class="form-control" type="date" name="date" th:value="${date}">
+        <div class="col-6 col-md-2">
+            <select class="form-select" name="type">
+                <option value="">Mọi loại đơn</option>
+                <option value="normal" th:selected="${type == 'normal'}">Đơn thường</option>
+                <option value="large" th:selected="${type == 'large'}">Đơn lớn</option>
+            </select>
         </div>
-        <div class="col-12 col-md-2">
+        <div class="col-6 col-md-2">
+            <input class="form-control" type="date" name="date" th:value="${date}" title="Ngày đặt">
+        </div>
+        <div class="col-6 col-md-2">
             <button class="btn btn-primary w-100">Lọc</button>
         </div>
     </form>
@@ -30,23 +37,35 @@
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
-            <tr><th>#</th><th>Giờ nhận</th><th>Khách</th><th>Đồ uống</th><th>Nhân viên</th><th>Trạng thái</th><th></th></tr>
+            <tr><th>#</th><th>Ngày đặt</th><th>Khách</th><th>Món</th><th>Giao / phụ trách</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
             <tr th:each="b : ${bookings.content}">
                 <td th:text="${b.id}"></td>
-                <td th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <div th:text="${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')}"></div>
+                    <span class="badge bg-warning text-dark" th:if="${b.largeOrder}">Đơn lớn</span>
+                    <span class="badge bg-light text-dark border" th:unless="${b.largeOrder}">Đơn thường</span>
+                </td>
                 <td>
                     <div th:text="${b.customer.fullName}"></div>
-                    <div class="small text-muted" th:text="${b.customer.email}"></div>
+                    <div class="small text-muted" th:text="${b.phone}"></div>
                 </td>
-                <td th:text="${b.drink.name} + ' x ' + ${b.quantity}"></td>
-                <td th:text="${b.staff != null} ? ${b.staff.fullName} : 'Chưa phân công'"></td>
+                <td>
+                    <div th:text="${b.totalCups} + ' ly'"></div>
+                    <div class="small text-muted" th:text="${b.summary}"></div>
+                </td>
+                <td>
+                    <div th:if="${b.largeOrder and b.bookingTime != null}"
+                         th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></div>
+                    <div th:unless="${b.largeOrder and b.bookingTime != null}" class="text-muted">Chưa hẹn giờ</div>
+                    <div class="small" th:text="${b.staff != null} ? ${b.staff.fullName} : 'Chưa phân công'"></div>
+                </td>
                 <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.status.label}"></span></td>
-                <td><a class="btn btn-sm btn-primary" th:href="@{/admin/bookings/{id}(id=${b.id})}">Chi tiết</a></td>
+                <td><a class="btn btn-sm btn-primary" th:href="@{/admin/orders/{id}(id=${b.id})}">Chi tiết</a></td>
             </tr>
             <tr th:if="${bookings.empty}">
-                <td colspan="7" class="text-center">Không có lịch đặt nào</td>
+                <td colspan="7" class="text-center">Không có đơn nào</td>
             </tr>
             </tbody>
         </table>
@@ -55,14 +74,14 @@
     <nav th:if="${bookings.totalPages > 1}">
         <ul class="pagination flex-wrap">
             <li class="page-item" th:classappend="${bookings.first} ? 'disabled'">
-                <a class="page-link" th:href="@{/admin/bookings(keyword=${keyword},status=${status},date=${date},page=${bookings.number - 1})}">«</a>
+                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},date=${date},page=${bookings.number - 1})}">«</a>
             </li>
             <li class="page-item" th:each="i : ${#numbers.sequence(0, bookings.totalPages - 1)}"
                 th:classappend="${i == bookings.number} ? 'active'">
-                <a class="page-link" th:href="@{/admin/bookings(keyword=${keyword},status=${status},date=${date},page=${i})}" th:text="${i + 1}"></a>
+                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},date=${date},page=${i})}" th:text="${i + 1}"></a>
             </li>
             <li class="page-item" th:classappend="${bookings.last} ? 'disabled'">
-                <a class="page-link" th:href="@{/admin/bookings(keyword=${keyword},status=${status},date=${date},page=${bookings.number + 1})}">»</a>
+                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},date=${date},page=${bookings.number + 1})}">»</a>
             </li>
         </ul>
     </nav>

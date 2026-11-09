@@ -3,14 +3,155 @@
 <head th:replace="~{fragments :: head('Admin')}"></head>
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
-<div class="container py-5">
-    <h2 class="mb-4">Trang quản trị (Admin)</h2>
-    <div class="d-flex flex-wrap gap-2">
-        <a class="btn btn-primary" th:href="@{/admin/bookings}">Quản lý lịch đặt</a>
+<div class="container py-4">
+    <h2 class="mb-3">Trang quản trị (Admin)</h2>
+    <div class="d-flex flex-wrap gap-2 mb-4">
+        <a class="btn btn-primary" th:href="@{/admin/orders}">Quản lý đơn</a>
         <a class="btn btn-primary" th:href="@{/admin/categories}">Quản lý loại đồ uống</a>
         <a class="btn btn-primary" th:href="@{/admin/drinks}">Quản lý đồ uống</a>
         <a class="btn btn-primary" th:href="@{/admin/users}">Quản lý tài khoản</a>
     </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-lg-3">
+            <div class="card text-bg-primary h-100"><div class="card-body">
+                <div class="small">Tổng số đơn</div>
+                <div class="fs-2 fw-bold" th:text="${totalBookings}"></div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <a class="text-decoration-none" th:href="@{/admin/orders(status='NEW')}">
+                <div class="card text-bg-warning h-100"><div class="card-body">
+                    <div class="small">Đơn mới chờ xử lý</div>
+                    <div class="fs-2 fw-bold" th:text="${newCount}"></div>
+                </div></div>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card text-bg-info h-100"><div class="card-body">
+                <div class="small">Đơn lớn giao hôm nay</div>
+                <div class="fs-2 fw-bold" th:text="${todayCount}"></div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card text-bg-success h-100"><div class="card-body">
+                <div class="small">Doanh thu (đơn hoàn thành)</div>
+                <div class="fs-4 fw-bold" th:text="${#numbers.formatInteger(revenue, 0, 'POINT')} + ' đ'"></div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3"><div class="card h-100"><div class="card-body text-center">
+            <div class="small text-muted">Khách hàng</div>
+            <div class="fs-4 fw-bold" th:text="${customers}"></div>
+        </div></div></div>
+        <div class="col-6 col-md-3"><div class="card h-100"><div class="card-body text-center">
+            <div class="small text-muted">Nhân viên</div>
+            <div class="fs-4 fw-bold" th:text="${staffs}"></div>
+        </div></div></div>
+        <div class="col-6 col-md-3"><div class="card h-100"><div class="card-body text-center">
+            <div class="small text-muted">Đồ uống</div>
+            <div class="fs-4 fw-bold" th:text="${drinkCount}"></div>
+        </div></div></div>
+        <div class="col-6 col-md-3"><div class="card h-100"><div class="card-body text-center">
+            <div class="small text-muted">Đơn lớn (đã đặt)</div>
+            <div class="fs-4 fw-bold" th:text="${largeCount}"></div>
+        </div></div></div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2 gap-2">
+        <h4 class="m-0">Thống kê theo thời gian</h4>
+        <div class="btn-group">
+            <a class="btn" th:classappend="${mode == 'day'} ? 'btn-primary' : 'btn-outline-primary'"
+               th:href="@{/admin/dashboard(mode='day')}">Theo ngày</a>
+            <a class="btn" th:classappend="${mode == 'month'} ? 'btn-primary' : 'btn-outline-primary'"
+               th:href="@{/admin/dashboard(mode='month')}">Theo tháng</a>
+        </div>
+    </div>
+    <p class="small text-muted">
+        Tính theo ngày đặt hàng. Số đơn không tính đơn đã hủy, doanh thu chỉ tính đơn Hoàn thành.
+        <span th:if="${mode == 'day'}">Hiển thị 14 ngày gần nhất.</span>
+        <span th:if="${mode == 'month'}">Hiển thị 6 tháng gần nhất.</span>
+    </p>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <canvas id="chart" height="120"></canvas>
+        </div>
+    </div>
+
+    <div class="table-responsive mb-4">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+            <tr><th th:text="${mode == 'day'} ? 'Ngày' : 'Tháng'"></th><th>Số đơn</th><th>Doanh thu</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="r : ${rows}">
+                <td th:text="${r.label}"></td>
+                <td th:text="${r.count}"></td>
+                <td th:text="${#numbers.formatInteger(r.revenue, 0, 'POINT')} + ' đ'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12 col-md-5">
+            <h4>Đơn theo trạng thái</h4>
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between align-items-center" th:each="s : ${statuses}">
+                    <span class="badge" th:classappend="${s.badge}" th:text="${s.label}"></span>
+                    <strong th:text="${s.count}"></strong>
+                </li>
+            </ul>
+        </div>
+        <div class="col-12 col-md-7">
+            <h4>Top 5 đồ uống được đặt nhiều</h4>
+            <div class="table-responsive">
+                <table class="table table-bordered align-middle">
+                    <thead class="table-light">
+                    <tr><th>Đồ uống</th><th>Số ly</th><th>Doanh thu</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="d : ${topDrinks}">
+                        <td th:text="${d.name}"></td>
+                        <td th:text="${d.quantity}"></td>
+                        <td th:text="${#numbers.formatInteger(d.revenue, 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(topDrinks)}">
+                        <td colspan="3" class="text-center">Chưa có dữ liệu</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    const labels = /*[[${labels}]]*/ [];
+    const counts = /*[[${counts}]]*/ [];
+    const revenues = /*[[${revenues}]]*/ [];
+    new Chart(document.getElementById('chart'), {
+        data: {
+            labels: labels,
+            datasets: [
+                { type: 'bar', label: 'Số đơn', data: counts, yAxisID: 'y', backgroundColor: 'rgba(13,110,253,0.6)' },
+                { type: 'line', label: 'Doanh thu (đ)', data: revenues, yAxisID: 'y1',
+                    borderColor: '#198754', backgroundColor: '#198754', tension: 0.3 }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true, position: 'left', title: { display: true, text: 'Số đơn' }, ticks: { precision: 0 } },
+                y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false },
+                    title: { display: true, text: 'Doanh thu (đ)' } }
+            }
+        }
+    });
+</script>
 </body>
 </html>

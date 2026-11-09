@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Lịch của tôi')}"></head>
+<head th:replace="~{fragments :: head('Đơn của tôi')}"></head>
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="m-0">Lịch đặt của tôi</h3>
+        <h3 class="m-0">Đơn của tôi</h3>
         <a class="btn btn-success" th:href="@{/menu}">+ Đặt thêm</a>
     </div>
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
@@ -14,33 +14,43 @@
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
-            <tr><th>Giờ nhận</th><th>Đồ uống</th><th>SL</th><th>Tổng tiền</th><th>Nhân viên</th><th>Trạng thái</th><th></th></tr>
+            <tr><th>Đơn</th><th>Món</th><th>Giao</th><th>Tổng</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
             <tr th:each="b : ${bookings}">
-                <td th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></td>
                 <td>
-                    <span th:text="${b.drink.name}"></span>
+                    <div th:text="'#' + ${b.id}"></div>
+                    <div class="small text-muted" th:text="${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')}"></div>
+                    <span class="badge bg-warning text-dark" th:if="${b.largeOrder}">Đơn lớn</span>
+                    <span class="badge bg-light text-dark border" th:unless="${b.largeOrder}">Đơn thường</span>
+                </td>
+                <td>
+                    <div th:text="${b.summary}"></div>
+                    <div class="small text-muted" th:text="'Giao tới: ' + ${b.address}"></div>
                     <div class="small text-muted" th:if="${b.note != null and !#strings.isEmpty(b.note)}"
                          th:text="'Ghi chú: ' + ${b.note}"></div>
                 </td>
-                <td th:text="${b.quantity}"></td>
-                <td th:text="${#numbers.formatInteger(b.totalPrice, 0, 'POINT')} + ' đ'"></td>
-                <td th:text="${b.staff != null} ? ${b.staff.fullName} : 'Chưa phân công'"></td>
                 <td>
-                        <span class="badge"
-                              th:classappend="${b.status.name() == 'CANCELLED' ? 'bg-secondary' : (b.status.name() == 'COMPLETED' ? 'bg-success' : 'bg-primary')}"
-                              th:text="${b.status.label}"></span>
+                    <div th:if="${b.largeOrder and b.bookingTime != null}"
+                         th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></div>
+                    <div th:unless="${b.largeOrder and b.bookingTime != null}">Cửa hàng báo sau</div>
+                    <div class="small text-muted" th:if="${b.staff != null}"
+                         th:text="(${b.largeOrder} ? 'Trưởng đội: ' : 'Nhân viên: ') + ${b.staff.fullName}"></div>
                 </td>
                 <td>
-                    <form th:if="${b.cancellable}" th:action="@{/booking/{id}/cancel(id=${b.id})}" method="post"
-                          onsubmit="return confirm('Hủy lịch này?')">
-                        <button class="btn btn-sm btn-danger">Hủy lịch</button>
+                    <div th:text="${b.totalCups} + ' ly'"></div>
+                    <strong th:text="${#numbers.formatInteger(b.totalPrice, 0, 'POINT')} + ' đ'"></strong>
+                </td>
+                <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.status.label}"></span></td>
+                <td>
+                    <form th:if="${b.cancellable}" th:action="@{/orders/{id}/cancel(id=${b.id})}" method="post"
+                          onsubmit="return confirm('Hủy đơn này?')">
+                        <button class="btn btn-sm btn-danger">Hủy đơn</button>
                     </form>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(bookings)}">
-                <td colspan="7" class="text-center">Bạn chưa có lịch đặt nào</td>
+                <td colspan="6" class="text-center">Bạn chưa có đơn nào</td>
             </tr>
             </tbody>
         </table>

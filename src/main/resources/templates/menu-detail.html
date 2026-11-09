@@ -18,12 +18,19 @@
             <h2 th:text="${drink.name}"></h2>
             <h4 class="text-success" th:text="${#numbers.formatInteger(drink.price, 0, 'POINT')} + ' đ'"></h4>
             <p class="mt-3" th:text="${drink.description}"></p>
-            <div class="mt-4">
-                <a sec:authorize="isAuthenticated()" class="btn btn-primary btn-lg"
-                   th:href="@{/booking/new(drinkId=${drink.id})}">Đặt lịch</a>
-                <a sec:authorize="!isAuthenticated()" class="btn btn-outline-primary btn-lg"
-                   th:href="@{/login}">Đăng nhập để đặt lịch</a>
-            </div>
+
+            <form sec:authorize="isAuthenticated()" th:action="@{/cart/add}" method="post"
+                  class="row g-2 align-items-center mt-3" style="max-width:380px">
+                <input type="hidden" name="drinkId" th:value="${drink.id}">
+                <div class="col-4">
+                    <input class="form-control" type="number" name="quantity" value="1" min="1" max="200">
+                </div>
+                <div class="col-8">
+                    <button class="btn btn-primary w-100">Thêm vào giỏ hàng</button>
+                </div>
+            </form>
+            <a sec:authorize="!isAuthenticated()" class="btn btn-outline-primary btn-lg mt-3"
+               th:href="@{/login}">Đăng nhập để đặt hàng</a>
         </div>
     </div>
 </div>

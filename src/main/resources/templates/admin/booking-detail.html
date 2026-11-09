@@ -1,44 +1,75 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Chi tiết lịch đặt')}"></head>
+<head th:replace="~{fragments :: head('Chi tiết đơn')}"></head>
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
-<div class="container py-4" style="max-width:720px">
-    <a class="btn btn-outline-secondary btn-sm mb-3" th:href="@{/admin/bookings}">← Danh sách lịch đặt</a>
+<div class="container py-4" style="max-width:760px">
+    <a class="btn btn-outline-secondary btn-sm mb-3" th:href="@{/admin/orders}">← Danh sách đơn</a>
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
     <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
     <div class="card mb-3">
         <div class="card-body">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="m-0" th:text="'Lịch #' + ${booking.id}"></h4>
+                <h4 class="m-0">
+                    <span th:text="'Đơn #' + ${booking.id}"></span>
+                    <span class="badge bg-warning text-dark fs-6" th:if="${booking.largeOrder}">Đơn lớn</span>
+                </h4>
                 <span class="badge fs-6" th:classappend="${booking.status.badge}" th:text="${booking.status.label}"></span>
             </div>
             <dl class="row mb-0">
                 <dt class="col-5 col-sm-3">Khách hàng</dt>
                 <dd class="col-7 col-sm-9" th:text="${booking.customer.fullName} + ' (' + ${booking.customer.email} + ')'"></dd>
-                <dt class="col-5 col-sm-3">Điện thoại</dt>
-                <dd class="col-7 col-sm-9" th:text="${booking.customer.phone}"></dd>
-                <dt class="col-5 col-sm-3">Đồ uống</dt>
-                <dd class="col-7 col-sm-9" th:text="${booking.drink.name} + ' x ' + ${booking.quantity}"></dd>
-                <dt class="col-5 col-sm-3">Tổng tiền</dt>
-                <dd class="col-7 col-sm-9" th:text="${#numbers.formatInteger(booking.totalPrice, 0, 'POINT')} + ' đ'"></dd>
-                <dt class="col-5 col-sm-3">Giờ nhận</dt>
-                <dd class="col-7 col-sm-9" th:text="${#temporals.format(booking.bookingTime, 'dd/MM/yyyy HH:mm')}"></dd>
-                <dt class="col-5 col-sm-3">Nhân viên</dt>
+                <dt class="col-5 col-sm-3">SĐT nhận hàng</dt>
+                <dd class="col-7 col-sm-9" th:text="${booking.phone}"></dd>
+                <dt class="col-5 col-sm-3">Địa chỉ giao</dt>
+                <dd class="col-7 col-sm-9" th:text="${booking.address}"></dd>
+                <dt class="col-5 col-sm-3">Giờ giao</dt>
+                <dd class="col-7 col-sm-9"
+                    th:text="${booking.largeOrder and booking.bookingTime != null} ? ${#temporals.format(booking.bookingTime, 'dd/MM/yyyy HH:mm')} : 'Cửa hàng sẽ báo sau'"></dd>
+                <dt class="col-5 col-sm-3" th:text="${booking.largeOrder} ? 'Trưởng đội' : 'Nhân viên'"></dt>
                 <dd class="col-7 col-sm-9" th:text="${booking.staff != null} ? ${booking.staff.fullName} : 'Chưa phân công'"></dd>
                 <dt class="col-5 col-sm-3">Ghi chú</dt>
                 <dd class="col-7 col-sm-9" th:text="${booking.note}"></dd>
-                <dt class="col-5 col-sm-3">Tạo lúc</dt>
+                <dt class="col-5 col-sm-3">Ngày đặt</dt>
                 <dd class="col-7 col-sm-9" th:text="${#temporals.format(booking.createdAt, 'dd/MM/yyyy HH:mm')}"></dd>
             </dl>
         </div>
     </div>
 
+    <div class="card mb-3">
+        <div class="card-body">
+            <h6>Các món trong đơn</h6>
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                    <tr><th>Đồ uống</th><th class="text-end">Đơn giá</th><th class="text-end">SL</th><th class="text-end">Thành tiền</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="it : ${booking.items}">
+                        <td th:text="${it.drink.name}"></td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(it.unitPrice, 0, 'POINT')} + ' đ'"></td>
+                        <td class="text-end" th:text="${it.quantity}"></td>
+                        <td class="text-end" th:text="${#numbers.formatInteger(it.lineTotal, 0, 'POINT')} + ' đ'"></td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <th>Tổng cộng</th>
+                        <th></th>
+                        <th class="text-end" th:text="${booking.totalCups}"></th>
+                        <th class="text-end text-success" th:text="${#numbers.formatInteger(booking.totalPrice, 0, 'POINT')} + ' đ'"></th>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <div class="card mb-3" th:if="${booking.status.name() == 'NEW' or booking.status.name() == 'CONFIRMED'}">
         <div class="card-body">
-            <h6>Phân công nhân viên</h6>
-            <form class="row g-2" th:action="@{/admin/bookings/{id}/assign(id=${booking.id})}" method="post">
+            <h6 th:text="${booking.largeOrder} ? 'Chỉ định trưởng đội' : 'Phân công nhân viên'"></h6>
+            <form class="row g-2" th:action="@{/admin/orders/{id}/assign(id=${booking.id})}" method="post">
                 <div class="col-8">
                     <select class="form-select" name="staffId">
                         <option value="">-- Chưa phân công --</option>
@@ -57,7 +88,7 @@
         <div class="card-body">
             <h6>Chuyển trạng thái</h6>
             <div class="d-flex flex-wrap gap-2">
-                <form th:each="s : ${nextStatuses}" th:action="@{/admin/bookings/{id}/status(id=${booking.id})}" method="post">
+                <form th:each="s : ${nextStatuses}" th:action="@{/admin/orders/{id}/status(id=${booking.id})}" method="post">
                     <input type="hidden" name="to" th:value="${s}">
                     <button class="btn"
                             th:classappend="${s.name() == 'CANCELLED'} ? 'btn-outline-danger' : 'btn-outline-primary'"

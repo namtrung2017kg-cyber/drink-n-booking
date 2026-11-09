@@ -1,3 +1,5 @@
+
+Bạn đã gửi
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
@@ -13,9 +15,13 @@
         <a class="navbar-brand" th:href="@{/}">☕ DrinkBooking</a>
         <div class="d-flex flex-wrap gap-2 align-items-center">
             <a class="btn btn-sm btn-outline-light" th:href="@{/menu}">Thực đơn</a>
-            <a sec:authorize="isAuthenticated()" class="btn btn-sm btn-outline-light" th:href="@{/booking/my}">Lịch của tôi</a>
+            <a sec:authorize="isAuthenticated()" class="btn btn-sm btn-outline-light" th:href="@{/cart}">
+                Giỏ hàng
+                <span class="badge bg-danger" th:if="${cartCount != null and cartCount > 0}" th:text="${cartCount}"></span>
+            </a>
+            <a sec:authorize="isAuthenticated()" class="btn btn-sm btn-outline-light" th:href="@{/orders/my}">Đơn của tôi</a>
             <a sec:authorize="hasRole('ADMIN')" class="btn btn-sm btn-warning" th:href="@{/admin/dashboard}">Admin</a>
-            <a sec:authorize="hasAnyRole('STAFF','ADMIN')" class="btn btn-sm btn-info" th:href="@{/staff/schedule}">Lịch làm việc</a>
+            <a sec:authorize="hasAnyRole('STAFF','ADMIN')" class="btn btn-sm btn-info" th:href="@{/staff/schedule}">Đơn được giao</a>
             <a sec:authorize="isAuthenticated()" class="btn btn-sm btn-outline-light" th:href="@{/profile}">Cá nhân</a>
             <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="m-0">
                 <button class="btn btn-sm btn-danger">Đăng xuất</button>

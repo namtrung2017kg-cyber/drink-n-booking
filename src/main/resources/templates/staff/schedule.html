@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{fragments :: head('Lịch làm việc')}"></head>
+<head th:replace="~{fragments :: head('Đơn được giao')}"></head>
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div class="container py-4">
-    <h3 class="mb-3">Lịch làm việc của tôi</h3>
+    <h3 class="mb-3">Đơn được giao cho tôi</h3>
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
     <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
@@ -12,17 +12,27 @@
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
-            <tr><th>Giờ nhận</th><th>Khách</th><th>Đồ uống</th><th>Ghi chú</th><th>Trạng thái</th><th></th></tr>
+            <tr><th>Giao</th><th>Khách</th><th>Món</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
             <tr th:each="b : ${todo}">
-                <td th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <div th:if="${b.largeOrder and b.bookingTime != null}"
+                         th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></div>
+                    <div th:unless="${b.largeOrder and b.bookingTime != null}" class="text-muted">Giao khi xong</div>
+                    <span class="badge bg-warning text-dark" th:if="${b.largeOrder}">Đơn lớn, bạn là trưởng đội</span>
+                </td>
                 <td>
                     <div th:text="${b.customer.fullName}"></div>
-                    <div class="small text-muted" th:text="${b.customer.phone}"></div>
+                    <div class="small text-muted" th:text="${b.phone}"></div>
+                    <div class="small text-muted" th:text="${b.address}"></div>
                 </td>
-                <td th:text="${b.drink.name} + ' x ' + ${b.quantity}"></td>
-                <td th:text="${b.note}"></td>
+                <td>
+                    <div th:text="${b.totalCups} + ' ly'"></div>
+                    <div class="small text-muted" th:text="${b.summary}"></div>
+                    <div class="small text-muted" th:if="${b.note != null and !#strings.isEmpty(b.note)}"
+                         th:text="'Ghi chú: ' + ${b.note}"></div>
+                </td>
                 <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.status.label}"></span></td>
                 <td>
                     <form th:if="${b.status.name() == 'CONFIRMED'}"
@@ -39,7 +49,7 @@
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(todo)}">
-                <td colspan="6" class="text-center">Không có lịch nào cần thực hiện</td>
+                <td colspan="5" class="text-center">Không có đơn nào cần thực hiện</td>
             </tr>
             </tbody>
         </table>
@@ -49,17 +59,17 @@
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
-            <tr><th>Giờ nhận</th><th>Khách</th><th>Đồ uống</th><th>Tổng tiền</th></tr>
+            <tr><th>Đơn</th><th>Khách</th><th>Món</th><th>Tổng tiền</th></tr>
             </thead>
             <tbody>
             <tr th:each="b : ${done}">
-                <td th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="'#' + ${b.id}"></td>
                 <td th:text="${b.customer.fullName}"></td>
-                <td th:text="${b.drink.name} + ' x ' + ${b.quantity}"></td>
+                <td th:text="${b.summary}"></td>
                 <td th:text="${#numbers.formatInteger(b.totalPrice, 0, 'POINT')} + ' đ'"></td>
             </tr>
             <tr th:if="${#lists.isEmpty(done)}">
-                <td colspan="4" class="text-center">Chưa có lịch nào hoàn thành</td>
+                <td colspan="4" class="text-center">Chưa có đơn nào hoàn thành</td>
             </tr>
             </tbody>
         </table>

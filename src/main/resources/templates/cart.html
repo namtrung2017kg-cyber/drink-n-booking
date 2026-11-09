@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments :: head('Giỏ hàng')}"></head>
+<body>
+<nav th:replace="~{fragments :: navbar}"></nav>
+<div class="container py-4">
+    <h3 class="mb-3">Giỏ hàng</h3>
+    <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <div th:if="${#lists.isEmpty(lines)}" class="text-center py-5">
+        <p class="text-muted">Giỏ hàng đang trống</p>
+        <a class="btn btn-primary" th:href="@{/menu}">Xem thực đơn</a>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(lines)}">
+        <div class="table-responsive">
+            <table class="table table-bordered align-middle">
+                <thead class="table-light">
+                <tr><th>Đồ uống</th><th>Đơn giá</th><th style="width:190px">Số lượng</th><th>Thành tiền</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="l : ${lines}">
+                    <td th:text="${l.drink.name}"></td>
+                    <td th:text="${#numbers.formatInteger(l.drink.price, 0, 'POINT')} + ' đ'"></td>
+                    <td>
+                        <form th:action="@{/cart/update}" method="post" class="d-flex gap-1">
+                            <input type="hidden" name="drinkId" th:value="${l.drink.id}">
+                            <input class="form-control form-control-sm" type="number" name="quantity"
+                                   th:value="${l.quantity}" min="0" max="200">
+                            <button class="btn btn-sm btn-outline-primary">Cập nhật</button>
+                        </form>
+                    </td>
+                    <td th:text="${#numbers.formatInteger(l.lineTotal, 0, 'POINT')} + ' đ'"></td>
+                    <td>
+                        <form th:action="@{/cart/remove}" method="post">
+                            <input type="hidden" name="drinkId" th:value="${l.drink.id}">
+                            <button class="btn btn-sm btn-danger">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <span>Tổng cộng: <strong th:text="${totalCups} + ' ly'"></strong></span>
+                <strong class="fs-5 text-success" th:text="${#numbers.formatInteger(totalMoney, 0, 'POINT')} + ' đ'"></strong>
+            </div>
+        </div>
+
+        <div class="alert alert-warning" th:if="${largeOrder}">
+            Đây là <strong>đơn lớn</strong> (trên [[${threshold}]] ly). Ở bước đặt hàng bạn sẽ chọn
+            ngày giờ giao cụ thể và trưởng đội phụ trách.
+        </div>
+        <div class="alert alert-info" th:unless="${largeOrder}">
+            Đơn thường (tối đa [[${threshold}]] ly): cửa hàng sẽ báo giờ giao sau khi xác nhận.
+            Đặt trên [[${threshold}]] ly để chọn giờ giao cụ thể.
+        </div>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary" th:href="@{/menu}">Chọn thêm món</a>
+            <form th:action="@{/cart/clear}" method="post" onsubmit="return confirm('Xóa toàn bộ giỏ hàng?')">
+                <button class="btn btn-outline-danger">Xóa giỏ hàng</button>
+            </form>
+            <a class="btn btn-primary ms-auto" th:href="@{/orders/checkout}">Đặt hàng</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
