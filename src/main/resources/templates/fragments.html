@@ -10,7 +10,7 @@
         body {
             min-height: 100vh;
             background:
-                    linear-gradient(rgba(255,255,255,.80), rgba(255,255,255,.80)),
+                    linear-gradient(rgba(255,255,255,.25), rgba(255,255,255,.25)),
                     url('/images/bg.jpg') center/cover fixed,
                     linear-gradient(135deg, #fdf3e7, #f1dcc0) fixed;
         }
@@ -23,31 +23,21 @@
         }
         @media (min-width: 1500px) {
             body::before, body::after {
+                content: "";
                 position: fixed;
                 top: 80px;
                 bottom: 20px;
                 width: calc((100vw - 1320px) / 2 - 24px);
                 border-radius: 16px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                text-align: center;
-                padding: 16px;
-                font-size: 1.4rem;
-                font-weight: 700;
-                color: #fff;
-                white-space: pre-line;
                 box-shadow: 0 4px 20px rgba(0,0,0,.15);
             }
             body::before {
                 left: 12px;
-                content: "☕ Cà phê\A Thơm ngon mỗi ngày";
                 background: url('/images/banner-left.jpg') center/cover,
                 linear-gradient(160deg, #6f4e37, #c08457);
             }
             body::after {
                 right: 12px;
-                content: "🧋 Đồ uống\A Đặt online, giao tận nơi";
                 background: url('/images/banner-right.jpg') center/cover,
                 linear-gradient(160deg, #1f7a8c, #6dc5b8);
             }
