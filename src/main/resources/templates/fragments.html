@@ -1,5 +1,3 @@
-
-Bạn đã gửi
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
@@ -8,6 +6,80 @@ Bạn đã gửi
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title th:text="${title}">DrinkBooking</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100vh;
+            background:
+                    linear-gradient(rgba(255,255,255,.80), rgba(255,255,255,.80)),
+                    url('/images/bg.jpg') center/cover fixed,
+                    linear-gradient(135deg, #fdf3e7, #f1dcc0) fixed;
+        }
+        body > .container {
+            background: rgba(255,255,255,.93);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,.08);
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        @media (min-width: 1500px) {
+            body::before, body::after {
+                position: fixed;
+                top: 80px;
+                bottom: 20px;
+                width: calc((100vw - 1320px) / 2 - 24px);
+                border-radius: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                padding: 16px;
+                font-size: 1.4rem;
+                font-weight: 700;
+                color: #fff;
+                white-space: pre-line;
+                box-shadow: 0 4px 20px rgba(0,0,0,.15);
+            }
+            body::before {
+                left: 12px;
+                content: "☕ Cà phê\A Thơm ngon mỗi ngày";
+                background: url('/images/banner-left.jpg') center/cover,
+                linear-gradient(160deg, #6f4e37, #c08457);
+            }
+            body::after {
+                right: 12px;
+                content: "🧋 Đồ uống\A Đặt online, giao tận nơi";
+                background: url('/images/banner-right.jpg') center/cover,
+                linear-gradient(160deg, #1f7a8c, #6dc5b8);
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('input[type="password"]').forEach(function (input) {
+                var wrap = document.createElement('div');
+                wrap.className = 'position-relative';
+                ['mb-1', 'mb-2', 'mb-3', 'mb-4'].forEach(function (c) {
+                    if (input.classList.contains(c)) {
+                        input.classList.remove(c);
+                        wrap.classList.add(c);
+                    }
+                });
+                input.parentNode.insertBefore(wrap, input);
+                wrap.appendChild(input);
+                input.style.paddingRight = '4rem';
+                var btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = 'Hiện';
+                btn.className = 'btn btn-link btn-sm text-secondary text-decoration-none position-absolute top-0 end-0 h-100 px-3';
+                btn.addEventListener('click', function () {
+                    var show = input.type === 'password';
+                    input.type = show ? 'text' : 'password';
+                    btn.textContent = show ? 'Ẩn' : 'Hiện';
+                });
+                wrap.appendChild(btn);
+            });
+        });
+    </script>
 </head>
 <body>
 <nav th:fragment="navbar" class="navbar navbar-dark bg-dark">
