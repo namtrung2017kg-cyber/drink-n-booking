@@ -18,8 +18,12 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/staff")
@@ -40,21 +44,46 @@ public class StaffController {
         return b.getCreatedAt() != null ? b.getCreatedAt() : LocalDateTime.MIN;
     }
 
+    private boolean isActive(Booking b) {
+        return b.getStatus() != BookingStatus.COMPLETED && b.getStatus() != BookingStatus.CANCELLED;
+    }
+
     @GetMapping("/schedule")
     public String schedule(Principal principal, Model model) {
         User me = userRepository.findByEmail(principal.getName()).orElseThrow();
         List<Booking> all = bookingRepository.findByStaffIdOrderByCreatedAtAsc(me.getId());
         List<Booking> todo = all.stream()
-                .filter(b -> b.getStatus() != BookingStatus.COMPLETED && b.getStatus() != BookingStatus.CANCELLED)
+                .filter(this::isActive)
                 .sorted(Comparator.comparing(this::dueTime))
                 .toList();
         List<Booking> done = all.stream()
                 .filter(b -> b.getStatus() == BookingStatus.COMPLETED)
                 .toList();
-        model.addAttribute("pending",
-                bookingRepository.findByLargeOrderFalseAndStatusOrderByCreatedAtAsc(BookingStatus.NEW));
+        // Đơn thường chờ nhận: chỉ hiện đơn chưa ai được giao
+        List<Booking> pending = bookingRepository
+                .findByLargeOrderFalseAndStatusOrderByCreatedAtAsc(BookingStatus.NEW).stream()
+                .filter(b -> b.getStaff() == null)
+                .toList();
+
+        // Bảng chỉ xem: ai đang phụ trách bao nhiêu đơn
+        List<Map<String, Object>> overview = new ArrayList<>();
+        for (User s : userRepository.findByRoleAndEnabledTrueOrderByIdAsc(Role.STAFF)) {
+            List<Booking> list = bookingRepository.findByStaffIdOrderByCreatedAtAsc(s.getId());
+            List<Booking> active = list.stream().filter(this::isActive).toList();
+            long doneCount = list.stream().filter(b -> b.getStatus() == BookingStatus.COMPLETED).count();
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("name", s.getFullName());
+            row.put("me", s.getId().equals(me.getId()));
+            row.put("active", active.size());
+            row.put("done", doneCount);
+            row.put("ids", active.stream().map(b -> "#" + b.getId()).collect(Collectors.joining(", ")));
+            overview.add(row);
+        }
+
+        model.addAttribute("pending", pending);
         model.addAttribute("todo", todo);
         model.addAttribute("done", done);
+        model.addAttribute("overview", overview);
         return "staff/schedule";
     }
 

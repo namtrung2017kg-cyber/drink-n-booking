@@ -12,9 +12,9 @@
         <div class="col-12 col-md-3">
             <input class="form-control" name="keyword" th:value="${keyword}" placeholder="Tên, email, SĐT khách...">
         </div>
-        <div class="col-6 col-md-3">
+        <div class="col-6 col-md-2">
             <select class="form-select" name="status">
-                <option value="">Tất cả trạng thái</option>
+                <option value="">Mọi trạng thái</option>
                 <option th:each="s : ${statuses}" th:value="${s}" th:text="${s.label}"
                         th:selected="${s == status}"></option>
             </select>
@@ -27,9 +27,16 @@
             </select>
         </div>
         <div class="col-6 col-md-2">
-            <input class="form-control" type="date" name="date" th:value="${date}" title="Ngày đặt">
+            <select class="form-select" name="staffId">
+                <option value="">Mọi người phụ trách</option>
+                <option th:each="s : ${staffList}" th:value="${s.id}" th:text="${s.fullName}"
+                        th:selected="${staffId != null and staffId == s.id}"></option>
+            </select>
         </div>
         <div class="col-6 col-md-2">
+            <input class="form-control" type="date" name="date" th:value="${date}" title="Ngày đặt">
+        </div>
+        <div class="col-12 col-md-1">
             <button class="btn btn-primary w-100">Lọc</button>
         </div>
     </form>
@@ -75,14 +82,14 @@
     <nav th:if="${bookings.totalPages > 1}">
         <ul class="pagination flex-wrap">
             <li class="page-item" th:classappend="${bookings.first} ? 'disabled'">
-                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},date=${date},page=${bookings.number - 1})}">«</a>
+                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},staffId=${staffId},date=${date},page=${bookings.number - 1})}">«</a>
             </li>
             <li class="page-item" th:each="i : ${#numbers.sequence(0, bookings.totalPages - 1)}"
                 th:classappend="${i == bookings.number} ? 'active'">
-                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},date=${date},page=${i})}" th:text="${i + 1}"></a>
+                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},staffId=${staffId},date=${date},page=${i})}" th:text="${i + 1}"></a>
             </li>
             <li class="page-item" th:classappend="${bookings.last} ? 'disabled'">
-                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},date=${date},page=${bookings.number + 1})}">»</a>
+                <a class="page-link" th:href="@{/admin/orders(keyword=${keyword},status=${status},type=${type},staffId=${staffId},date=${date},page=${bookings.number + 1})}">»</a>
             </li>
         </ul>
     </nav>

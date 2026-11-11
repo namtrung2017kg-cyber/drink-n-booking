@@ -29,11 +29,13 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("SELECT b FROM Booking b WHERE (:status IS NULL OR b.status = :status) "
             + "AND (:large IS NULL OR b.largeOrder = :large) "
+            + "AND (:staffId IS NULL OR b.staff.id = :staffId) "
             + "AND b.createdAt >= :from AND b.createdAt < :to "
             + "AND (LOWER(b.customer.fullName) LIKE LOWER(CONCAT('%', :keyword, '%')) "
             + "OR LOWER(b.customer.email) LIKE LOWER(CONCAT('%', :keyword, '%')) "
             + "OR b.phone LIKE CONCAT('%', :keyword, '%'))")
     Page<Booking> searchAdmin(@Param("keyword") String keyword, @Param("status") BookingStatus status,
-                              @Param("large") Boolean large, @Param("from") LocalDateTime from,
-                              @Param("to") LocalDateTime to, Pageable pageable);
+                              @Param("large") Boolean large, @Param("staffId") Long staffId,
+                              @Param("from") LocalDateTime from, @Param("to") LocalDateTime to,
+                              Pageable pageable);
 }

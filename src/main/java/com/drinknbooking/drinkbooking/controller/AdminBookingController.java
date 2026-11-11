@@ -43,6 +43,7 @@ public class AdminBookingController {
     public String list(@RequestParam(name = "keyword", defaultValue = "") String keyword,
                        @RequestParam(name = "status", required = false) BookingStatus status,
                        @RequestParam(name = "type", defaultValue = "") String type,
+                       @RequestParam(name = "staffId", required = false) Long staffId,
                        @RequestParam(name = "date", required = false)
                        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
                        @RequestParam(name = "page", defaultValue = "0") int page,
@@ -50,13 +51,15 @@ public class AdminBookingController {
         Boolean large = "large".equals(type) ? Boolean.TRUE : ("normal".equals(type) ? Boolean.FALSE : null);
         LocalDateTime from = date != null ? date.atStartOfDay() : LocalDateTime.of(2000, 1, 1, 0, 0);
         LocalDateTime to = date != null ? date.plusDays(1).atStartOfDay() : LocalDateTime.of(2100, 1, 1, 0, 0);
-        Page<Booking> result = bookingRepository.searchAdmin(keyword.trim(), status, large, from, to,
+        Page<Booking> result = bookingRepository.searchAdmin(keyword.trim(), status, large, staffId, from, to,
                 PageRequest.of(Math.max(page, 0), 5, Sort.by("id").ascending()));
         model.addAttribute("bookings", result);
         model.addAttribute("statuses", BookingStatus.values());
+        model.addAttribute("staffList", userRepository.findByRoleAndEnabledTrueOrderByIdAsc(Role.STAFF));
         model.addAttribute("keyword", keyword);
         model.addAttribute("status", status);
         model.addAttribute("type", type);
+        model.addAttribute("staffId", staffId);
         model.addAttribute("date", date);
         return "admin/bookings";
     }
@@ -90,7 +93,7 @@ public class AdminBookingController {
         }
         String err = bookingService.assignStaff(b, staff);
         if (err != null) ra.addFlashAttribute("error", err);
-        else ra.addFlashAttribute("msg", "Đã cập nhật trưởng đội");
+        else ra.addFlashAttribute("msg", "Đã cập nhật người phụ trách");
         return "redirect:/admin/orders/" + id;
     }
 

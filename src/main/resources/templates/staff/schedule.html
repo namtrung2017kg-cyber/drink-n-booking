@@ -93,6 +93,29 @@
         </table>
     </div>
 
+    <h5 class="mt-4">Tình trạng đơn</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+            <tr><th>Nhân viên</th><th class="text-center">Đang phụ trách</th><th>Mã đơn</th><th class="text-center">Đã hoàn thành</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="o : ${overview}" th:classappend="${o['me']} ? 'table-primary'">
+                <td>
+                    <span th:text="${o['name']}"></span>
+                    <span class="small text-muted" th:if="${o['me']}">(bạn)</span>
+                </td>
+                <td class="text-center" th:text="${o['active']}"></td>
+                <td th:text="${#strings.isEmpty(o['ids'])} ? '—' : ${o['ids']}"></td>
+                <td class="text-center" th:text="${o['done']}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(overview)}">
+                <td colspan="4" class="text-center">Chưa có nhân viên nào</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
     <h5 class="mt-4">Đã hoàn thành</h5>
     <div class="table-responsive">
         <table class="table table-bordered align-middle">

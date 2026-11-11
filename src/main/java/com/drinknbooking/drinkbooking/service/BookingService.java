@@ -86,25 +86,35 @@ public class BookingService {
         if (b.getStatus() != BookingStatus.NEW) {
             return "Đơn này đã có người nhận hoặc không còn chờ xác nhận";
         }
+        if (b.getStaff() != null && !b.getStaff().getId().equals(staff.getId())) {
+            return "Đơn này admin đã giao cho " + b.getStaff().getFullName();
+        }
         b.setStaff(staff);
         b.setStatus(BookingStatus.IN_PROGRESS);
         bookingRepository.save(b);
         return null;
     }
 
-    // Chỉ đơn lớn mới có chỉ định trưởng đội
+    // Admin đổi người phụ trách (đơn thường) hoặc chỉ định trưởng đội (đơn lớn)
     public String assignStaff(Booking b, User staff) {
-        if (!b.isLargeOrder()) {
-            return "Đơn thường không cần phân công, nhân viên sẽ tự xác nhận nhận đơn";
-        }
-        if (b.getStatus() != BookingStatus.NEW && b.getStatus() != BookingStatus.CONFIRMED) {
-            return "Không thể đổi trưởng đội của đơn này";
-        }
-        if (staff == null && b.getStatus() == BookingStatus.CONFIRMED) {
-            return "Đơn đã xác nhận phải có trưởng đội";
-        }
-        if (staff != null && staffBusy(b, staff)) {
-            return "Nhân viên này đã phụ trách đơn lớn khác vào giờ đó";
+        BookingStatus st = b.getStatus();
+        if (b.isLargeOrder()) {
+            if (st != BookingStatus.NEW && st != BookingStatus.CONFIRMED) {
+                return "Không thể đổi trưởng đội của đơn này";
+            }
+            if (staff == null && st == BookingStatus.CONFIRMED) {
+                return "Đơn đã xác nhận phải có trưởng đội";
+            }
+            if (staff != null && staffBusy(b, staff)) {
+                return "Nhân viên này đã phụ trách đơn lớn khác vào giờ đó";
+            }
+        } else {
+            if (st != BookingStatus.NEW && st != BookingStatus.CONFIRMED && st != BookingStatus.IN_PROGRESS) {
+                return "Chỉ đổi được người phụ trách khi đơn chưa làm xong";
+            }
+            if (staff == null && st == BookingStatus.IN_PROGRESS) {
+                return "Đơn đang làm phải có người phụ trách";
+            }
         }
         b.setStaff(staff);
         bookingRepository.save(b);

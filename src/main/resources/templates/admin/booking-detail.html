@@ -27,7 +27,7 @@
                 <dt class="col-5 col-sm-3">Giờ giao</dt>
                 <dd class="col-7 col-sm-9"
                     th:text="${booking.largeOrder and booking.bookingTime != null} ? ${#temporals.format(booking.bookingTime, 'dd/MM/yyyy HH:mm')} : 'Cửa hàng sẽ báo sau'"></dd>
-                <dt class="col-5 col-sm-3" th:text="${booking.largeOrder} ? 'Trưởng đội' : 'Nhân viên nhận đơn'"></dt>
+                <dt class="col-5 col-sm-3" th:text="${booking.largeOrder} ? 'Trưởng đội' : 'Người phụ trách'"></dt>
                 <dd class="col-7 col-sm-9"
                     th:text="${booking.staff != null} ? ${booking.staff.fullName} : (${booking.largeOrder} ? 'Chưa chỉ định' : 'Chưa có người nhận')"></dd>
                 <dt class="col-5 col-sm-3">Ghi chú</dt>
@@ -68,13 +68,14 @@
     </div>
 
     <div class="card mb-3"
-         th:if="${booking.largeOrder and (booking.status.name() == 'NEW' or booking.status.name() == 'CONFIRMED')}">
+         th:if="${(booking.largeOrder and (booking.status.name() == 'NEW' or booking.status.name() == 'CONFIRMED'))
+                  or (!booking.largeOrder and (booking.status.name() == 'NEW' or booking.status.name() == 'CONFIRMED' or booking.status.name() == 'IN_PROGRESS'))}">
         <div class="card-body">
-            <h6>Chỉ định trưởng đội</h6>
+            <h6 th:text="${booking.largeOrder} ? 'Chỉ định trưởng đội' : 'Đổi người phụ trách'"></h6>
             <form class="row g-2" th:action="@{/admin/orders/{id}/assign(id=${booking.id})}" method="post">
                 <div class="col-8">
                     <select class="form-select" name="staffId">
-                        <option value="">-- Chưa chỉ định --</option>
+                        <option value="">-- Chưa có --</option>
                         <option th:each="s : ${staffList}" th:value="${s.id}" th:text="${s.fullName}"
                                 th:selected="${booking.staff != null and booking.staff.id == s.id}"></option>
                     </select>
