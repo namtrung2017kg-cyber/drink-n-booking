@@ -4,6 +4,8 @@
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div class="container py-4">
+    <a class="btn btn-outline-secondary mb-3" th:href="@{/admin/dashboard}">← Về trang quản trị</a>
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="m-0">Đồ uống</h3>
         <a class="btn btn-success" th:href="@{/admin/drinks/new}">+ Thêm đồ uống</a>
@@ -33,8 +35,8 @@
             <tr><th>#</th><th>Tên</th><th>Loại</th><th>Giá</th><th>Trạng thái</th><th style="width:170px">Thao tác</th></tr>
             </thead>
             <tbody>
-            <tr th:each="d : ${drinks.content}">
-                <td th:text="${d.id}"></td>
+            <tr th:each="d, stat : ${drinks.content}">
+                <td th:text="${drinks.number * drinks.size + stat.count}"></td>
                 <td th:text="${d.name}"></td>
                 <td th:text="${d.category.name}"></td>
                 <td th:text="${#numbers.formatInteger(d.price, 0, 'POINT')} + ' đ'"></td>
@@ -43,9 +45,13 @@
                     <span th:unless="${d.available}" class="badge bg-secondary">Ngừng bán</span>
                 </td>
                 <td>
-                    <a class="btn btn-sm btn-primary" th:href="@{/admin/drinks/{id}/edit(id=${d.id})}">Sửa</a>
+                    <a class="btn btn-sm btn-primary"
+                       th:href="@{/admin/drinks/{id}/edit(id=${d.id},page=${drinks.number},keyword=${keyword},categoryId=${categoryId})}">Sửa</a>
                     <form class="d-inline" th:action="@{/admin/drinks/{id}/delete(id=${d.id})}"
                           method="post" onsubmit="return confirm('Xóa đồ uống này?')">
+                        <input type="hidden" name="page" th:value="${drinks.number}">
+                        <input type="hidden" name="keyword" th:value="${keyword}">
+                        <input type="hidden" name="categoryId" th:value="${categoryId}">
                         <button class="btn btn-sm btn-danger">Xóa</button>
                     </form>
                 </td>

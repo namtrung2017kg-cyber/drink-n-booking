@@ -29,6 +29,8 @@ import java.io.IOException;
 @Controller
 @RequestMapping("/admin/drinks")
 public class AdminDrinkController {
+    private static final int PAGE_SIZE = 5;
+
     private final DrinkRepository drinkRepository;
     private final CategoryRepository categoryRepository;
     private final DrinkImageRepository drinkImageRepository;
@@ -45,8 +47,14 @@ public class AdminDrinkController {
                        @RequestParam(name = "categoryId", required = false) Long categoryId,
                        @RequestParam(name = "page", defaultValue = "0") int page,
                        Model model) {
+        Sort sort = Sort.by("id").ascending();
         Page<Drink> result = drinkRepository.search(keyword.trim(), categoryId,
-                PageRequest.of(Math.max(page, 0), 5, Sort.by("id").ascending()));
+                PageRequest.of(Math.max(page, 0), PAGE_SIZE, sort));
+        // Nếu trang hiện tại không còn món nào (vừa xóa hết món ở trang cuối) thì lùi về trang cuối
+        if (result.getTotalPages() > 0 && result.getNumber() >= result.getTotalPages()) {
+            result = drinkRepository.search(keyword.trim(), categoryId,
+                    PageRequest.of(result.getTotalPages() - 1, PAGE_SIZE, sort));
+        }
         model.addAttribute("drinks", result);
         model.addAttribute("categories", categoryRepository.findAll(Sort.by("id")));
         model.addAttribute("keyword", keyword);
@@ -55,18 +63,27 @@ public class AdminDrinkController {
     }
 
     @GetMapping("/new")
-    public String newForm(Model model) {
+    public String newForm(@RequestParam(name = "page", defaultValue = "0") int page,
+                          @RequestParam(name = "keyword", defaultValue = "") String keyword,
+                          @RequestParam(name = "categoryId", required = false) Long categoryId,
+                          Model model) {
         Drink d = new Drink();
         d.setCategory(new Category());
         model.addAttribute("drink", d);
         model.addAttribute("categories", categoryRepository.findAll(Sort.by("id")));
+        addListState(model, page, keyword, categoryId);
         return "admin/drink-form";
     }
 
     @GetMapping("/{id}/edit")
-    public String editForm(@PathVariable("id") Long id, Model model) {
+    public String editForm(@PathVariable("id") Long id,
+                           @RequestParam(name = "page", defaultValue = "0") int page,
+                           @RequestParam(name = "keyword", defaultValue = "") String keyword,
+                           @RequestParam(name = "categoryId", required = false) Long categoryId,
+                           Model model) {
         model.addAttribute("drink", drinkRepository.findById(id).orElseThrow());
         model.addAttribute("categories", categoryRepository.findAll(Sort.by("id")));
+        addListState(model, page, keyword, categoryId);
         return "admin/drink-form";
     }
 
@@ -74,6 +91,9 @@ public class AdminDrinkController {
     public String save(@Valid @ModelAttribute("drink") Drink drink, BindingResult br,
                        @RequestParam(name = "imageFile", required = false) MultipartFile imageFile,
                        @RequestParam(name = "removeImage", defaultValue = "false") boolean removeImage,
+                       @RequestParam(name = "page", defaultValue = "0") int page,
+                       @RequestParam(name = "keyword", defaultValue = "") String keyword,
+                       @RequestParam(name = "categoryId", required = false) Long filterCategoryId,
                        Model model, RedirectAttributes ra) throws IOException {
         if (drink.getCategory() == null) drink.setCategory(new Category());
         Long catId = drink.getCategory().getId();
@@ -89,6 +109,7 @@ public class AdminDrinkController {
 
         if (br.hasErrors()) {
             model.addAttribute("categories", categoryRepository.findAll(Sort.by("id")));
+            addListState(model, page, keyword, filterCategoryId);
             return "admin/drink-form";
         }
 
@@ -109,11 +130,16 @@ public class AdminDrinkController {
             drinkRepository.save(saved);
         }
         ra.addFlashAttribute("msg", "Đã lưu đồ uống");
+        keepListState(ra, page, keyword, filterCategoryId);
         return "redirect:/admin/drinks";
     }
 
     @PostMapping("/{id}/delete")
-    public String delete(@PathVariable("id") Long id, RedirectAttributes ra) {
+    public String delete(@PathVariable("id") Long id,
+                         @RequestParam(name = "page", defaultValue = "0") int page,
+                         @RequestParam(name = "keyword", defaultValue = "") String keyword,
+                         @RequestParam(name = "categoryId", required = false) Long categoryId,
+                         RedirectAttributes ra) {
         try {
             drinkRepository.deleteById(id);
             drinkImageRepository.deleteById(id);
@@ -121,7 +147,20 @@ public class AdminDrinkController {
         } catch (DataIntegrityViolationException e) {
             ra.addFlashAttribute("error", "Đồ uống đã có lịch đặt, hãy bỏ tích Đang bán thay vì xóa");
         }
+        keepListState(ra, page, keyword, categoryId);
         return "redirect:/admin/drinks";
+    }
+
+    private void addListState(Model model, int page, String keyword, Long categoryId) {
+        model.addAttribute("returnPage", page);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("categoryId", categoryId);
+    }
+
+    private void keepListState(RedirectAttributes ra, int page, String keyword, Long categoryId) {
+        ra.addAttribute("page", page);
+        if (keyword != null && !keyword.isBlank()) ra.addAttribute("keyword", keyword);
+        if (categoryId != null) ra.addAttribute("categoryId", categoryId);
     }
 
     private byte[] compress(MultipartFile file) throws IOException {

@@ -4,10 +4,16 @@
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div class="container py-4" style="max-width:560px">
+    <a class="btn btn-outline-secondary mb-3"
+       th:href="@{/admin/drinks(page=${returnPage},keyword=${keyword},categoryId=${categoryId})}">← Quay lại danh sách</a>
+
     <h3 class="mb-3" th:text="${drink.id == null} ? 'Thêm đồ uống' : 'Sửa đồ uống'"></h3>
     <form th:action="@{/admin/drinks/save}" th:object="${drink}" method="post" enctype="multipart/form-data">
         <input type="hidden" th:field="*{id}">
         <input type="hidden" th:field="*{imageUrl}">
+        <input type="hidden" name="page" th:value="${returnPage}">
+        <input type="hidden" name="keyword" th:value="${keyword}">
+        <input type="hidden" name="categoryId" th:value="${categoryId}">
         <div class="mb-3">
             <label class="form-label">Tên đồ uống</label>
             <input class="form-control" th:field="*{name}">
@@ -48,7 +54,8 @@
             <label class="form-check-label" for="available">Đang bán</label>
         </div>
         <button class="btn btn-primary">Lưu</button>
-        <a class="btn btn-secondary" th:href="@{/admin/drinks}">Hủy</a>
+        <a class="btn btn-secondary"
+           th:href="@{/admin/drinks(page=${returnPage},keyword=${keyword},categoryId=${categoryId})}">Hủy</a>
     </form>
 </div>
 </body>
