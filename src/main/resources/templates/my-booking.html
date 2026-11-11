@@ -41,7 +41,7 @@
                     <div th:text="${b.totalCups} + ' ly'"></div>
                     <strong th:text="${#numbers.formatInteger(b.totalPrice, 0, 'POINT')} + ' đ'"></strong>
                 </td>
-                <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.status.label}"></span></td>
+                <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.statusLabel}"></span></td>
                 <td>
                     <form th:if="${b.cancellable}" th:action="@{/orders/{id}/cancel(id=${b.id})}" method="post"
                           onsubmit="return confirm('Hủy đơn này?')">

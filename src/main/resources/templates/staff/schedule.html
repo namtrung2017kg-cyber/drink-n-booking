@@ -4,11 +4,44 @@
 <body>
 <nav th:replace="~{fragments :: navbar}"></nav>
 <div class="container py-4">
-    <h3 class="mb-3">Đơn được giao cho tôi</h3>
+    <h3 class="mb-3">Đơn của nhân viên</h3>
     <div th:if="${msg}" class="alert alert-success" th:text="${msg}"></div>
     <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
-    <h5 class="mt-4">Cần thực hiện</h5>
+    <h5 class="mt-4">Đơn thường chờ nhận</h5>
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead class="table-light">
+            <tr><th>Đặt lúc</th><th>Khách</th><th>Món</th><th></th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="b : ${pending}">
+                <td th:text="${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')}"></td>
+                <td>
+                    <div th:text="${b.customer.fullName}"></div>
+                    <div class="small text-muted" th:text="${b.phone}"></div>
+                    <div class="small text-muted" th:text="${b.address}"></div>
+                </td>
+                <td>
+                    <div th:text="${b.totalCups} + ' ly'"></div>
+                    <div class="small text-muted" th:text="${b.summary}"></div>
+                    <div class="small text-muted" th:if="${b.note != null and !#strings.isEmpty(b.note)}"
+                         th:text="'Ghi chú: ' + ${b.note}"></div>
+                </td>
+                <td>
+                    <form th:action="@{/staff/bookings/{id}/accept(id=${b.id})}" method="post">
+                        <button class="btn btn-sm btn-primary">Xác nhận nhận đơn</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(pending)}">
+                <td colspan="4" class="text-center">Không có đơn thường nào đang chờ nhận</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h5 class="mt-4">Đơn tôi đang phụ trách</h5>
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
@@ -33,8 +66,12 @@
                     <div class="small text-muted" th:if="${b.note != null and !#strings.isEmpty(b.note)}"
                          th:text="'Ghi chú: ' + ${b.note}"></div>
                 </td>
-                <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.status.label}"></span></td>
+                <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.statusLabel}"></span></td>
                 <td>
+                    <form th:if="${b.status.name() == 'NEW' and !b.largeOrder}"
+                          th:action="@{/staff/bookings/{id}/accept(id=${b.id})}" method="post">
+                        <button class="btn btn-sm btn-primary">Xác nhận nhận đơn</button>
+                    </form>
                     <form th:if="${b.status.name() == 'CONFIRMED'}"
                           th:action="@{/staff/bookings/{id}/status(id=${b.id})}" method="post">
                         <input type="hidden" name="to" value="IN_PROGRESS">
@@ -43,13 +80,14 @@
                     <form th:if="${b.status.name() == 'IN_PROGRESS'}"
                           th:action="@{/staff/bookings/{id}/status(id=${b.id})}" method="post">
                         <input type="hidden" name="to" value="COMPLETED">
-                        <button class="btn btn-sm btn-success">Hoàn thành</button>
+                        <button class="btn btn-sm btn-success"
+                                th:text="${b.largeOrder} ? 'Hoàn thành' : 'Đã làm xong'"></button>
                     </form>
-                    <span th:if="${b.status.name() == 'NEW'}" class="small text-muted">Chờ admin xác nhận</span>
+                    <span th:if="${b.status.name() == 'NEW' and b.largeOrder}" class="small text-muted">Chờ admin xác nhận</span>
                 </td>
             </tr>
             <tr th:if="${#lists.isEmpty(todo)}">
-                <td colspan="5" class="text-center">Không có đơn nào cần thực hiện</td>
+                <td colspan="5" class="text-center">Bạn chưa phụ trách đơn nào</td>
             </tr>
             </tbody>
         </table>

@@ -22,8 +22,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/orders")
@@ -66,11 +66,11 @@ public class AdminBookingController {
         Booking b = bookingRepository.findById(id).orElseThrow();
         model.addAttribute("booking", b);
         model.addAttribute("staffList", userRepository.findByRoleAndEnabledTrueOrderByIdAsc(Role.STAFF));
-        List<BookingStatus> next = new ArrayList<>();
+        Map<BookingStatus, String> actions = new LinkedHashMap<>();
         for (BookingStatus s : BookingStatus.values()) {
-            if (bookingService.canMove(b.getStatus(), s, true)) next.add(s);
+            if (bookingService.canMove(b, s, true)) actions.put(s, bookingService.actionLabel(b, s));
         }
-        model.addAttribute("nextStatuses", next);
+        model.addAttribute("actions", actions);
         return "admin/booking-detail";
     }
 
@@ -90,7 +90,7 @@ public class AdminBookingController {
         }
         String err = bookingService.assignStaff(b, staff);
         if (err != null) ra.addFlashAttribute("error", err);
-        else ra.addFlashAttribute("msg", "Đã cập nhật người phụ trách");
+        else ra.addFlashAttribute("msg", "Đã cập nhật trưởng đội");
         return "redirect:/admin/orders/" + id;
     }
 
@@ -100,7 +100,7 @@ public class AdminBookingController {
         Booking b = bookingRepository.findById(id).orElseThrow();
         String err = bookingService.changeStatus(b, to, true);
         if (err != null) ra.addFlashAttribute("error", err);
-        else ra.addFlashAttribute("msg", "Đã chuyển trạng thái sang \"" + to.getLabel() + "\"");
+        else ra.addFlashAttribute("msg", "Đã chuyển trạng thái sang \"" + b.getStatusLabel() + "\"");
         return "redirect:/admin/orders/" + id;
     }
 }

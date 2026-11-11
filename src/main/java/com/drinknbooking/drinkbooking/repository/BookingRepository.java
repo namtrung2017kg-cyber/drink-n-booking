@@ -16,6 +16,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByStaffIdOrderByCreatedAtAsc(Long staffId);
 
+    List<Booking> findByLargeOrderFalseAndStatusOrderByCreatedAtAsc(BookingStatus status);
+
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.largeOrder = true "
             + "AND b.bookingTime = :time AND b.status <> :excluded")
     long countAt(@Param("time") LocalDateTime time, @Param("excluded") BookingStatus excluded);

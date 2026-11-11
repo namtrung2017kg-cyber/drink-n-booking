@@ -57,6 +57,22 @@ public class Booking {
                 .collect(Collectors.joining(", "));
     }
 
+    // Tên trạng thái hiển thị cho khách, khác nhau giữa đơn thường và đơn lớn
+    public String labelOf(BookingStatus s) {
+        if (largeOrder) return s.getLabel();
+        return switch (s) {
+            case NEW -> "Chờ xác nhận";
+            case CONFIRMED -> "Đã xác nhận";
+            case IN_PROGRESS -> "Đang làm";
+            case COMPLETED -> "Đã làm xong, đang giao";
+            case CANCELLED -> "Đã hủy";
+        };
+    }
+
+    public String getStatusLabel() {
+        return labelOf(status);
+    }
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public User getCustomer() { return customer; }

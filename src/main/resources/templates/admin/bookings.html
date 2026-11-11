@@ -59,9 +59,10 @@
                     <div th:if="${b.largeOrder and b.bookingTime != null}"
                          th:text="${#temporals.format(b.bookingTime, 'dd/MM/yyyy HH:mm')}"></div>
                     <div th:unless="${b.largeOrder and b.bookingTime != null}" class="text-muted">Chưa hẹn giờ</div>
-                    <div class="small" th:text="${b.staff != null} ? ${b.staff.fullName} : 'Chưa phân công'"></div>
+                    <div class="small"
+                         th:text="${b.staff != null} ? ${b.staff.fullName} : (${b.largeOrder} ? 'Chưa chỉ định trưởng đội' : 'Chưa ai nhận')"></div>
                 </td>
-                <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.status.label}"></span></td>
+                <td><span class="badge" th:classappend="${b.status.badge}" th:text="${b.statusLabel}"></span></td>
                 <td><a class="btn btn-sm btn-primary" th:href="@{/admin/orders/{id}(id=${b.id})}">Chi tiết</a></td>
             </tr>
             <tr th:if="${bookings.empty}">

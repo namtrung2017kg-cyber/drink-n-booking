@@ -15,7 +15,7 @@
                     <span th:text="'Đơn #' + ${booking.id}"></span>
                     <span class="badge bg-warning text-dark fs-6" th:if="${booking.largeOrder}">Đơn lớn</span>
                 </h4>
-                <span class="badge fs-6" th:classappend="${booking.status.badge}" th:text="${booking.status.label}"></span>
+                <span class="badge fs-6" th:classappend="${booking.status.badge}" th:text="${booking.statusLabel}"></span>
             </div>
             <dl class="row mb-0">
                 <dt class="col-5 col-sm-3">Khách hàng</dt>
@@ -27,8 +27,9 @@
                 <dt class="col-5 col-sm-3">Giờ giao</dt>
                 <dd class="col-7 col-sm-9"
                     th:text="${booking.largeOrder and booking.bookingTime != null} ? ${#temporals.format(booking.bookingTime, 'dd/MM/yyyy HH:mm')} : 'Cửa hàng sẽ báo sau'"></dd>
-                <dt class="col-5 col-sm-3" th:text="${booking.largeOrder} ? 'Trưởng đội' : 'Nhân viên'"></dt>
-                <dd class="col-7 col-sm-9" th:text="${booking.staff != null} ? ${booking.staff.fullName} : 'Chưa phân công'"></dd>
+                <dt class="col-5 col-sm-3" th:text="${booking.largeOrder} ? 'Trưởng đội' : 'Nhân viên nhận đơn'"></dt>
+                <dd class="col-7 col-sm-9"
+                    th:text="${booking.staff != null} ? ${booking.staff.fullName} : (${booking.largeOrder} ? 'Chưa chỉ định' : 'Chưa có người nhận')"></dd>
                 <dt class="col-5 col-sm-3">Ghi chú</dt>
                 <dd class="col-7 col-sm-9" th:text="${booking.note}"></dd>
                 <dt class="col-5 col-sm-3">Ngày đặt</dt>
@@ -66,13 +67,14 @@
         </div>
     </div>
 
-    <div class="card mb-3" th:if="${booking.status.name() == 'NEW' or booking.status.name() == 'CONFIRMED'}">
+    <div class="card mb-3"
+         th:if="${booking.largeOrder and (booking.status.name() == 'NEW' or booking.status.name() == 'CONFIRMED')}">
         <div class="card-body">
-            <h6 th:text="${booking.largeOrder} ? 'Chỉ định trưởng đội' : 'Phân công nhân viên'"></h6>
+            <h6>Chỉ định trưởng đội</h6>
             <form class="row g-2" th:action="@{/admin/orders/{id}/assign(id=${booking.id})}" method="post">
                 <div class="col-8">
                     <select class="form-select" name="staffId">
-                        <option value="">-- Chưa phân công --</option>
+                        <option value="">-- Chưa chỉ định --</option>
                         <option th:each="s : ${staffList}" th:value="${s.id}" th:text="${s.fullName}"
                                 th:selected="${booking.staff != null and booking.staff.id == s.id}"></option>
                     </select>
@@ -84,15 +86,15 @@
         </div>
     </div>
 
-    <div class="card" th:if="${!#lists.isEmpty(nextStatuses)}">
+    <div class="card" th:if="${!#maps.isEmpty(actions)}">
         <div class="card-body">
-            <h6>Chuyển trạng thái</h6>
+            <h6>Thao tác</h6>
             <div class="d-flex flex-wrap gap-2">
-                <form th:each="s : ${nextStatuses}" th:action="@{/admin/orders/{id}/status(id=${booking.id})}" method="post">
-                    <input type="hidden" name="to" th:value="${s}">
+                <form th:each="a : ${actions}" th:action="@{/admin/orders/{id}/status(id=${booking.id})}" method="post">
+                    <input type="hidden" name="to" th:value="${a.key}">
                     <button class="btn"
-                            th:classappend="${s.name() == 'CANCELLED'} ? 'btn-outline-danger' : 'btn-outline-primary'"
-                            th:text="${s.label}"></button>
+                            th:classappend="${a.key.name() == 'CANCELLED'} ? 'btn-outline-danger' : 'btn-outline-primary'"
+                            th:text="${a.value}"></button>
                 </form>
             </div>
         </div>

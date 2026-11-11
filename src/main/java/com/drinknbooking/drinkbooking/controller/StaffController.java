@@ -2,6 +2,7 @@ package com.drinknbooking.drinkbooking.controller;
 
 import com.drinknbooking.drinkbooking.entity.Booking;
 import com.drinknbooking.drinkbooking.entity.BookingStatus;
+import com.drinknbooking.drinkbooking.entity.Role;
 import com.drinknbooking.drinkbooking.entity.User;
 import com.drinknbooking.drinkbooking.repository.BookingRepository;
 import com.drinknbooking.drinkbooking.repository.UserRepository;
@@ -50,9 +51,25 @@ public class StaffController {
         List<Booking> done = all.stream()
                 .filter(b -> b.getStatus() == BookingStatus.COMPLETED)
                 .toList();
+        model.addAttribute("pending",
+                bookingRepository.findByLargeOrderFalseAndStatusOrderByCreatedAtAsc(BookingStatus.NEW));
         model.addAttribute("todo", todo);
         model.addAttribute("done", done);
         return "staff/schedule";
+    }
+
+    @PostMapping("/bookings/{id}/accept")
+    public String accept(@PathVariable("id") Long id, Principal principal, RedirectAttributes ra) {
+        User me = userRepository.findByEmail(principal.getName()).orElseThrow();
+        if (me.getRole() != Role.STAFF) {
+            ra.addFlashAttribute("error", "Chỉ nhân viên mới nhận đơn ở trang này. Admin hãy xác nhận trong Quản lý đơn");
+            return "redirect:/staff/schedule";
+        }
+        Booking b = bookingRepository.findById(id).orElseThrow();
+        String err = bookingService.acceptByStaff(b, me);
+        if (err != null) ra.addFlashAttribute("error", err);
+        else ra.addFlashAttribute("msg", "Đã nhận đơn #" + id + ", đơn chuyển sang \"" + b.getStatusLabel() + "\"");
+        return "redirect:/staff/schedule";
     }
 
     @PostMapping("/bookings/{id}/status")
@@ -60,12 +77,12 @@ public class StaffController {
                          Principal principal, RedirectAttributes ra) {
         Booking b = bookingRepository.findById(id).orElseThrow();
         if (b.getStaff() == null || !b.getStaff().getEmail().equals(principal.getName())) {
-            ra.addFlashAttribute("error", "Đơn này không được phân công cho bạn");
+            ra.addFlashAttribute("error", "Đơn này không phải do bạn phụ trách");
             return "redirect:/staff/schedule";
         }
         String err = bookingService.changeStatus(b, to, false);
         if (err != null) ra.addFlashAttribute("error", err);
-        else ra.addFlashAttribute("msg", "Đã chuyển trạng thái sang \"" + to.getLabel() + "\"");
+        else ra.addFlashAttribute("msg", "Đã chuyển trạng thái sang \"" + b.getStatusLabel() + "\"");
         return "redirect:/staff/schedule";
     }
 }
