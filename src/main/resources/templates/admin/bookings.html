@@ -44,11 +44,12 @@
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
-            <tr><th>#</th><th>Ngày đặt</th><th>Khách</th><th>Món</th><th>Giao / phụ trách</th><th>Trạng thái</th><th></th></tr>
+            <tr><th>STT</th><th>Mã đơn</th><th>Ngày đặt</th><th>Khách</th><th>Món</th><th>Giao / phụ trách</th><th>Trạng thái</th><th></th></tr>
             </thead>
             <tbody>
-            <tr th:each="b : ${bookings.content}">
-                <td th:text="${b.id}"></td>
+            <tr th:each="b, stat : ${bookings.content}">
+                <td th:text="${bookings.number * bookings.size + stat.count}"></td>
+                <td th:text="'#' + ${b.id}"></td>
                 <td>
                     <div th:text="${#temporals.format(b.createdAt, 'dd/MM/yyyy HH:mm')}"></div>
                     <span class="badge bg-warning text-dark" th:if="${b.largeOrder}">Đơn lớn</span>
@@ -73,7 +74,7 @@
                 <td><a class="btn btn-sm btn-primary" th:href="@{/admin/orders/{id}(id=${b.id})}">Chi tiết</a></td>
             </tr>
             <tr th:if="${bookings.empty}">
-                <td colspan="7" class="text-center">Không có đơn nào</td>
+                <td colspan="8" class="text-center">Không có đơn nào</td>
             </tr>
             </tbody>
         </table>

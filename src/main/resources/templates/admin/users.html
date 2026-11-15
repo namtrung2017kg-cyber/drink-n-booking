@@ -31,11 +31,11 @@
     <div class="table-responsive">
         <table class="table table-bordered align-middle">
             <thead class="table-light">
-            <tr><th>#</th><th>Họ tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Trạng thái</th><th style="width:230px">Thao tác</th></tr>
+            <tr><th>STT</th><th>Họ tên</th><th>Email</th><th>SĐT</th><th>Vai trò</th><th>Trạng thái</th><th style="width:230px">Thao tác</th></tr>
             </thead>
             <tbody>
-            <tr th:each="u : ${users.content}">
-                <td th:text="${u.id}"></td>
+            <tr th:each="u, stat : ${users.content}">
+                <td th:text="${users.number * users.size + stat.count}"></td>
                 <td th:text="${u.fullName}"></td>
                 <td th:text="${u.email}"></td>
                 <td th:text="${u.phone}"></td>
