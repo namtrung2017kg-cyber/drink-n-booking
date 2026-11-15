@@ -3,22 +3,25 @@ package com.drinknbooking.drinkbooking.config;
 import org.hibernate.dialect.MySQLDialect;
 import org.hibernate.engine.jdbc.dialect.spi.DialectResolutionInfo;
 
-/**
- * Thêm AUTO_ID_CACHE=1 khi tạo bảng để TiDB cấp ID liên tiếp 1, 2, 3...
- * Đoạn /*T! ... *\/ chỉ TiDB hiểu, MySQL XAMPP coi là chú thích và bỏ qua.
- */
 public class TiDBFriendlyDialect extends MySQLDialect {
+
+    private final boolean tidb;
 
     public TiDBFriendlyDialect() {
         super();
+        this.tidb = false;
     }
 
     public TiDBFriendlyDialect(DialectResolutionInfo info) {
         super(info);
+        String version = info.getDatabaseVersion();
+        this.tidb = version != null && version.toLowerCase().contains("tidb");
+        System.out.println(">>> TiDBFriendlyDialect: version=" + version + " | tidb=" + tidb);
     }
 
     @Override
     public String getTableTypeString() {
-        return super.getTableTypeString() + " /*T![auto_id_cache] AUTO_ID_CACHE=1 */";
+        String base = super.getTableTypeString();
+        return tidb ? base + " AUTO_ID_CACHE=1" : base;
     }
 }
